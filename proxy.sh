@@ -22,19 +22,25 @@ if [ "$1" == 's' ]; then
   exit 0
 fi
 if [ "$1" == 'ss' ]; then
-    conf=$(grep -r '"server"' ~/Documents/ss.d|awk -F: '{print $1" "$3}'|column -t|fzf|awk '{print $1}')
+    dir=~/Documents/ss.d/
+    conf=$(grep -r '"server"' $dir | awk -F: '{sub(".+/ss.d/", "", $1); print $1" "$3}'|column -t|fzf|awk '{print $1}')
     if [ -n "$conf" ]; then
+      conf="$dir$conf"
       echo "切换配置: -> $conf"
-      ln -sf "$conf" ~/Documents/ss-local.json
+      ln -sf "$conf" ~/ss-local.json
       pkill -F ~/.ss-local.pid
-      ss-local -c ~/Documents/ss-local.json -f ~/.ss-local.pid
+      ss-local -c ~/ss-local.json -f ~/.ss-local.pid
     fi
     exit 0
 fi
+killall privoxy
 privoxy ~/Documents/privoxy.config
 privoxy ~/Documents/privoxy-all.config
 pkill -F ~/.ss-local.pid
-ss-local -c ~/Documents/ss-local.json -f ~/.ss-local.pid
+ss-local -c ~/ss-local.json -f ~/.ss-local.pid
 networksetup -setwebproxy "Wi-Fi" 127.0.0.1 8118
 networksetup -setsecurewebproxy "Wi-Fi" 127.0.0.1 8118
+networksetup -setautoproxystate  "Wi-Fi" off
+networksetup -setproxyautodiscovery  "Wi-Fi" off
+networksetup -setsocksfirewallproxystate  "Wi-Fi" off
 
